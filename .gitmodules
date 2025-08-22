@@ -1,0 +1,4 @@
+[submodule "crossplane-service-broker"]
+	path = crossplane-service-broker
+	url = git@github.com:eirini-forks/crossplane-service-broker.git
+	branch = generic-service
