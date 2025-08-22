@@ -1,0 +1,94 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: psql-plan-small
+  labels:
+    service.syn.tools/cluster: local-helm-provider
+    service.syn.tools/id: psql-offering # This is the ID from 'compositefooinstances.syn.tools' above
+    service.syn.tools/name: psql
+    service.syn.tools/plan: small
+    service.syn.tools/updatable: "false"
+  annotations:
+    service.syn.tools/description: PSQL instance small size
+    service.syn.tools/metadata: |
+      {
+        "displayName": "Small",
+        "memory": "1Gi",
+      }
+spec:
+  compositeTypeRef:
+    apiVersion: syn.tools/v1
+    kind: CompositePSQLInstance
+  writeConnectionSecretsToNamespace: crossplane-services # Namespace to collect all connection secrets
+  mode: Pipeline
+  pipeline:
+  - step: create-release
+    functionRef:
+      name: crossplane-contrib-function-go-templating
+    input:
+      apiVersion: gotemplating.fn.crossplane.io/v1beta1
+      kind: GoTemplate
+      source: Inline
+      inline:
+        template: |
+          apiVersion: helm.crossplane.io/v1beta1
+          kind: Release
+          metadata:
+            annotations:
+              {{ setResourceNameAnnotation "psql-release" }}
+          spec:
+            connectionDetails:
+            - apiVersion: v1
+              fieldPath: spec.clusterIP
+              kind: Service
+              name: psql-{{ .observed.composite.resource.metadata.name }}
+              namespace: crossplane-services
+              toConnectionSecretKey: endpoint
+            - apiVersion: v1
+              fieldPath: spec.ports[0].port
+              kind: Service
+              name: psql-{{ .observed.composite.resource.metadata.name }}
+              namespace: crossplane-services
+              toConnectionSecretKey: port
+            - apiVersion: v1
+              fieldPath: data.postgres-password
+              kind: Secret
+              name: psql-{{ .observed.composite.resource.metadata.name }}
+              namespace: crossplane-services
+              toConnectionSecretKey: password
+            deletionPolicy: Delete
+            forProvider:
+              set:
+              - name: "primary.persistence.size"
+                value: {{ .observed.composite.resource.spec.parameters.size }}
+              - name: "global.postgresql.fullnameOverride"
+                value: psql-{{ .observed.composite.resource.metadata.name }}
+              chart:
+                name: postgresql
+                repository: oci://registry-1.docker.io/bitnamicharts
+                version: 16.7.15
+              namespace: crossplane-services
+              skipCreateNamespace: true
+            managementPolicies:
+            - '*'
+            providerConfigRef:
+              name: local-helm-provider
+            rollbackLimit: 3
+            writeConnectionSecretToRef:
+              name: "{{ .observed.composite.resource.metadata.name }}-connection-details"
+              namespace: crossplane-services
+          ---
+          apiVersion: meta.gotemplating.fn.crossplane.io/v1alpha1
+          kind: CompositeConnectionDetails
+          {{ if eq $.observed.resources nil }}
+          data: {}
+          {{ else }}
+          data:
+            endpoint: {{ ( index $.observed.resources "psql-release" ).connectionDetails.endpoint }}
+            port: {{ ( index $.observed.resources "psql-release" ).connectionDetails.port }}
+            user: {{ "postgres" | b64enc }}
+            password: {{ ( index $.observed.resources "psql-release" ).connectionDetails.password }}
+          {{ end }}
+  - step: automatically-detect-readiness
+    functionRef:
+      name: crossplane-contrib-function-auto-ready
