@@ -1,0 +1,38 @@
+apiVersion: vendir.k14s.io/v1alpha1
+kind: Config
+directories:
+- path: vendor
+  contents:
+  - path: kpack
+    githubRelease:
+      slug: pivotal/kpack
+      latest: true
+      disableAutoChecksumValidation: true
+  - path: metrics-server-local
+    githubRelease:
+      slug: kubernetes-sigs/metrics-server
+      latest: true
+      disableAutoChecksumValidation: true
+      assetNames: ["components.yaml"]
+  - path: cert-manager
+    githubRelease:
+      slug: cert-manager/cert-manager
+      latest: true
+      disableAutoChecksumValidation: true
+      assetNames: ["cert-manager*.yaml"]
+  - path: contour
+    git:
+      url: https://github.com/projectcontour/contour
+      depth: 1
+      refSelection:
+        semver:
+          constraints: ">=1.27.0"
+    includePaths:
+      - examples/render/contour-gateway-provisioner.yaml
+    newRootPath: examples/render
+  - path: gateway-api
+    githubRelease:
+      slug: kubernetes-sigs/gateway-api
+      latest: true
+      disableAutoChecksumValidation: true
+      assetNames: ["experimental-install.yaml"]

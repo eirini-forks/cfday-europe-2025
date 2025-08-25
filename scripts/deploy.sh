@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -euo pipefail
+
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 SCRIPT_DIR="${ROOT_DIR}/scripts"
 
@@ -12,10 +14,54 @@ retry() {
 }
 
 install_korifi() {
-  kubectl delete namespace korifi-installer --ignore-not-found
-  kubectl apply -f https://github.com/cloudfoundry/korifi/releases/latest/download/install-korifi-kind.yaml
-  kubectl --namespace korifi-installer wait --for=jsonpath='.status.ready'=1 jobs install-korifi
-  kubectl --namespace korifi-installer logs --follow job/install-korifi
+  $SCRIPT_DIR/helpers/install-dependencies.sh
+
+  kubectl apply -f - <<EOF
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cf
+EOF
+
+  kubectl --namespace cf delete secret image-registry-credentials --ignore-not-found
+  kubectl --namespace cf create secret docker-registry image-registry-credentials \
+    --docker-username="_json_key" \
+    --docker-password="$(vault kv get -field=value common/gcp/functions-key)" \
+    --docker-server="europe-docker.pkg.dev"
+
+  helm repo add korifi https://cloudfoundry.github.io/korifi/
+  helm repo update
+
+  helm upgrade --install korifi korifi/korifi \
+    --namespace korifi \
+    --create-namespace \
+    --set=adminUserName="cf-admin" \
+    --set=defaultAppDomainName="cfday.korifi.cf-app.com" \
+    --set=generateIngressCertificates="true" \
+    --set=logLevel="debug" \
+    --set=debug="false" \
+    --set=stagingRequirements.buildCacheMB="1024" \
+    --set=api.apiServer.url="cf.cfday.korifi.cf-app.com" \
+    --set=controllers.taskTTL="5s" \
+    --set=jobTaskRunner.jobTTL="5s" \
+    --set=containerRepositoryPrefix="europe-docker.pkg.dev/cf-on-k8s-wg/cfday-images/" \
+    --set=kpackImageBuilder.builderRepository="europe-docker.pkg.dev/cf-on-k8s-wg/cfday-images/kpack-builder" \
+    --set=networking.gatewayClass="contour" \
+    --set=experimental.managedServices.enabled="true" \
+    --set=experimental.managedServices.trustInsecureBrokers="true" \
+    --set=api.resources.limits.cpu=50m \
+    --set=api.resources.limits.memory=100Mi \
+    --set=controllers.resources.limits.cpu=50m \
+    --set=controllers.resources.limits.memory=100Mi \
+    --set=kpackImageBuilder.resources.limits.cpu=50m \
+    --set=kpackImageBuilder.resources.limits.memory=100Mi \
+    --set=statefulsetRunner.resources.limits.cpu=50m \
+    --set=statefulsetRunner.resources.limits.memory=100Mi \
+    --set=jobTaskRunner.resources.limits.cpu=50m \
+    --set=jobTaskRunner.resources.limits.memory=100Mi \
+    --wait
+
+  kubectl wait --for=condition=ready clusterbuilder --all=true --timeout=15m
 }
 
 function deploy_crossplane_service_broker() {
@@ -74,11 +120,21 @@ function create_psql_service_offering() {
   kubectl apply -f "$SCRIPT_DIR/assets/psql-offering"
 }
 
+function update_cluster_dns() {
+  kubectl get service envoy-korifi -n korifi-gateway -ojsonpath='{.status.loadBalancer.ingress[0]}'
+  gcloud dns record-sets update "*.cfday.korifi.cf-app.com." \
+    --rrdatas="$(kubectl get service envoy-korifi -n korifi-gateway -ojsonpath='{.status.loadBalancer.ingress[0].ip}')" \
+    --type=A \
+    --ttl=300 \
+    --zone=korifi
+}
+
 main() {
   install_korifi
 
   deploy_crossplane_service_broker
   create_psql_service_offering
+  update_cluster_dns
 }
 
 main
