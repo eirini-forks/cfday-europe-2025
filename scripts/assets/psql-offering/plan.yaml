@@ -39,7 +39,7 @@ spec:
           spec:
             connectionDetails:
             - apiVersion: v1
-              fieldPath: spec.clusterIP
+              fieldPath: status.loadBalancer.ingress[0].ip
               kind: Service
               name: psql-{{ .observed.composite.resource.metadata.name }}
               namespace: crossplane-services
@@ -63,6 +63,8 @@ spec:
                 value: {{ .observed.composite.resource.spec.parameters.size }}
               - name: "global.postgresql.fullnameOverride"
                 value: psql-{{ .observed.composite.resource.metadata.name }}
+              - name: "primary.service.type"
+                value: "LoadBalancer"
               chart:
                 name: postgresql
                 repository: oci://registry-1.docker.io/bitnamicharts
