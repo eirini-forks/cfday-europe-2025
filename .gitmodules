@@ -2,3 +2,7 @@
 	path = crossplane-service-broker
 	url = git@github.com:eirini-forks/crossplane-service-broker.git
 	branch = generic-service
+[submodule "pgweb"]
+	path = pgweb
+	url = git@github.com:eirini-forks/pgweb.git
+	branch = vcap-services
