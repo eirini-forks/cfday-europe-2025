@@ -115,9 +115,9 @@ EOF
   kubectl -n crossplane-service-broker wait --for=condition=available deployment crossplane-service-broker --timeout=15m
 }
 
-function create_psql_service_offering() {
+function create_services() {
   echo "Creating PostgreSQL service offering..."
-  kubectl apply -f "$SCRIPT_DIR/assets/psql-offering"
+  kubectl apply -f "$SCRIPT_DIR/assets/services/*"
 }
 
 function update_cluster_dns() {
@@ -133,7 +133,7 @@ main() {
   install_korifi
 
   deploy_crossplane_service_broker
-  create_psql_service_offering
+  create_services
   update_cluster_dns
 }
 
