@@ -6,3 +6,7 @@
 	path = pgweb
 	url = git@github.com:eirini-forks/pgweb.git
 	branch = vcap-services
+[submodule "cloud-storage-file-browser"]
+	path = cloud-storage-file-browser
+	url = git@github.com:eirini-forks/cloud-storage-file-browser.git
+	branch = insecure
