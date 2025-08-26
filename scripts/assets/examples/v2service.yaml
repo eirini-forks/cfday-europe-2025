@@ -9,6 +9,11 @@ spec:
     ingress: INGRESS_TRAFFIC_ALL
     location: europe-west1
     template:
+      # IMPORTANT: We need to specify the service account so that we can
+      # control its permissions. If the service account is not specified, the
+      # service runs with the default compute engine account which lacks
+      # permissions to operate on buckets
+      serviceAccount: gcloud-functions@cf-on-k8s-wg.iam.gserviceaccount.com
       containers:
         - image: korifi/file-api:4
 ---

@@ -11,15 +11,4 @@ spec:
     name: gcp-family-providerconfig
   forProvider:
     location: europe-west1
----
-apiVersion: storage.gcp.upbound.io/v1beta2
-kind: BucketIAMMember
-metadata:
-  name: cf-on-k8s-wg-test-bucket-iam-member
-spec:
-  providerConfigRef:
-    name: gcp-family-providerconfig
-  forProvider:
-    bucket: cf-on-k8s-wg-test-bucket
-    member: allUsers
-    role: roles/storage.objectAdmin
+    forceDestroy: true
