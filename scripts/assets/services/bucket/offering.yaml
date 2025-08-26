@@ -1,0 +1,51 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: compositebucketinstances.syn.tools
+  labels:
+    service.syn.tools/id: bucket-offering # uuidgen | tr '[:upper:]' '[:lower:]'
+    service.syn.tools/name: bucket
+    service.syn.tools/updatable: 'false'
+  annotations:
+    service.syn.tools/description: Gcloud Storage Bucket
+    service.syn.tools/metadata: |
+      {
+        "displayName": "Gcloud Storage Bucket"
+      }
+    service.syn.tools/tags: |
+      ["storage", "bucket", "gcloud"]
+spec:
+  connectionSecretKeys:
+    - apiEndpoint
+    - bucketUrl
+  group: syn.tools
+  names:
+    kind: CompositeBucketInstance
+    plural: compositebucketinstances
+  versions:
+    - name: v1
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                parameters:
+                  type: object
+                  description: "The service instance parameters"
+                  properties:
+                    bucketName:
+                      type: string
+                      description: "The name of the bucket. It must be globally unique."
+                  required: ["bucketName"]
+
+      referenceable: true
+      served: true
+      additionalPrinterColumns:
+        - jsonPath: .metadata.labels['service\.syn\.tools/plan']
+          name: Plan
+          type: string
+        - jsonPath: .metadata.labels['service\.syn\.tools/cluster']
+          name: Cluster
+          type: string

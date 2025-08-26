@@ -1,0 +1,86 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: bucket-plan-standard
+  labels:
+    service.syn.tools/id: bucket-offering # This is the ID from 'compositefooinstances.syn.tools' above
+    service.syn.tools/name: bucket
+    service.syn.tools/plan: standard
+    service.syn.tools/updatable: "false"
+  annotations:
+    service.syn.tools/description: Bucket instance
+    service.syn.tools/metadata: |
+      {
+        "displayName": "standard"
+      }
+spec:
+  compositeTypeRef:
+    apiVersion: syn.tools/v1
+    kind: CompositeBucketInstance
+  writeConnectionSecretsToNamespace: crossplane-services # Namespace to collect all connection secrets
+  mode: Pipeline
+  pipeline:
+  - step: create-bucket
+    functionRef:
+      name: crossplane-contrib-function-go-templating
+    input:
+      apiVersion: gotemplating.fn.crossplane.io/v1beta1
+      kind: GoTemplate
+      source: Inline
+      inline:
+        template: |
+          apiVersion: storage.gcp.upbound.io/v1beta2
+          kind: Bucket
+          metadata:
+            annotations:
+              {{ setResourceNameAnnotation "bucket" }}
+            name: bucket-{{ .observed.composite.resource.spec.parameters.bucketName }}
+          spec:
+            providerConfigRef:
+              name: gcp-family-providerconfig
+            forProvider:
+              location: europe-west1
+              forceDestroy: true
+  - step: create-bucket-api
+    functionRef:
+      name: crossplane-contrib-function-go-templating
+    input:
+      apiVersion: gotemplating.fn.crossplane.io/v1beta1
+      kind: GoTemplate
+      source: Inline
+      inline:
+        template: |
+          apiVersion: cloudrun.gcp.upbound.io/v1beta2
+          kind: V2Service
+          metadata:
+            annotations:
+              {{ setResourceNameAnnotation "bucket-api-service" }}
+            name: bucket-{{ .observed.composite.resource.spec.parameters.bucketName }}-api
+          spec:
+            providerConfigRef:
+              name: gcp-family-providerconfig
+            forProvider:
+              ingress: INGRESS_TRAFFIC_ALL
+              location: europe-west1
+              template:
+                serviceAccount: gcloud-functions@cf-on-k8s-wg.iam.gserviceaccount.com
+                containers:
+                  - image: korifi/bucket-api:e40aff0c-8dbd-4a8c-b73c-885ae8941d82
+          ---
+          apiVersion: cloudrun.gcp.upbound.io/v1beta2
+          kind: ServiceIAMMember
+          metadata:
+            annotations:
+              {{ setResourceNameAnnotation "bucket-api-service-iam-member" }}
+            name: bucket-{{ .observed.composite.resource.spec.parameters.bucketName }}-api
+          spec:
+            providerConfigRef:
+              name: gcp-family-providerconfig
+            forProvider:
+              location: europe-west1
+              member: allUsers
+              role: roles/run.invoker
+              service: bucket-{{ .observed.composite.resource.spec.parameters.bucketName }}-api
+  - step: automatically-detect-readiness
+    functionRef:
+      name: crossplane-contrib-function-auto-ready

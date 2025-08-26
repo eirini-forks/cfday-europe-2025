@@ -3,7 +3,6 @@ kind: Composition
 metadata:
   name: psql-plan-small
   labels:
-    service.syn.tools/cluster: local-helm-provider
     service.syn.tools/id: psql-offering # This is the ID from 'compositefooinstances.syn.tools' above
     service.syn.tools/name: psql
     service.syn.tools/plan: small
