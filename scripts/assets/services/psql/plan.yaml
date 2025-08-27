@@ -36,6 +36,22 @@ spec:
             annotations:
               {{ setResourceNameAnnotation "psql-release" }}
           spec:
+            providerConfigRef:
+              name: local-helm-provider
+            forProvider:
+              set:
+              - name: "primary.persistence.size"
+                value: {{ .observed.composite.resource.spec.parameters.size }}
+              - name: "global.postgresql.fullnameOverride"
+                value: psql-{{ .observed.composite.resource.metadata.name }}
+              - name: "primary.service.type"
+                value: "LoadBalancer"
+              chart:
+                name: postgresql
+                repository: oci://registry-1.docker.io/bitnamicharts
+                version: 16.7.15
+              namespace: crossplane-services
+              skipCreateNamespace: true
             connectionDetails:
             - apiVersion: v1
               fieldPath: status.loadBalancer.ingress[0].ip
@@ -56,31 +72,27 @@ spec:
               namespace: crossplane-services
               toConnectionSecretKey: password
             deletionPolicy: Delete
-            forProvider:
-              set:
-              - name: "primary.persistence.size"
-                value: {{ .observed.composite.resource.spec.parameters.size }}
-              - name: "global.postgresql.fullnameOverride"
-                value: psql-{{ .observed.composite.resource.metadata.name }}
-              - name: "primary.service.type"
-                value: "LoadBalancer"
-              chart:
-                name: postgresql
-                repository: oci://registry-1.docker.io/bitnamicharts
-                version: 16.7.15
-              namespace: crossplane-services
-              skipCreateNamespace: true
             managementPolicies:
             - '*'
-            providerConfigRef:
-              name: local-helm-provider
             rollbackLimit: 3
             writeConnectionSecretToRef:
               name: "{{ .observed.composite.resource.metadata.name }}-connection-details"
               namespace: crossplane-services
+  - step: create-connection-details
+    functionRef:
+      name: crossplane-contrib-function-go-templating
+    input:
+      apiVersion: gotemplating.fn.crossplane.io/v1beta1
+      kind: GoTemplate
+      source: Inline
+      inline:
+        template: |
           ---
           apiVersion: meta.gotemplating.fn.crossplane.io/v1alpha1
           kind: CompositeConnectionDetails
+          metadata:
+            annotations:
+              {{ setResourceNameAnnotation "psql-composite-connection-details" }}
           {{ if eq $.observed.resources nil }}
           data: {}
           {{ else }}
