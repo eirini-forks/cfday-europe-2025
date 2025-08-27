@@ -81,6 +81,40 @@ spec:
               member: allUsers
               role: roles/run.invoker
               service: bucket-{{ .observed.composite.resource.spec.parameters.bucketName }}-api
+  - step: create-connection-details
+    functionRef:
+      name: crossplane-contrib-function-go-templating
+    input:
+      apiVersion: gotemplating.fn.crossplane.io/v1beta1
+      kind: GoTemplate
+      source: Inline
+      inline:
+        template: |
+          ---
+          apiVersion: meta.gotemplating.fn.crossplane.io/v1alpha1
+          kind: CompositeConnectionDetails
+          metadata:
+            annotations:
+              {{ setResourceNameAnnotation "bucket-composite-connection-details" }}
+          {{ if eq $.observed.resources nil }}
+          data: {}
+          {{ else }}
+          data:
+            apiEndpoint: {{ (or ( index $.observed.resources "bucket-api-service" ).resource.status.atProvider.uri "") | b64enc }}
+            bucketUrl: {{ (or ( index $.observed.resources "bucket" ).resource.status.atProvider.selfLink "") | b64enc }}
+          {{ end }}
   - step: automatically-detect-readiness
     functionRef:
       name: crossplane-contrib-function-auto-ready
+  - step: sequence-creation
+    functionRef:
+      name: crossplane-contrib-function-sequencer
+    input:
+      apiVersion: sequencer.fn.crossplane.io/v1beta1
+      kind: Input
+      rules:
+        - sequence:
+          - bucket
+          - bucket-api-service
+          - bucket-api-service-iam-member
+          - bucket-composite-connection-details
