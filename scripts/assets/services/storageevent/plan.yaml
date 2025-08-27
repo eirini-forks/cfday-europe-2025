@@ -1,0 +1,86 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: storageevent-plan-standard
+  labels:
+    service.syn.tools/id: storageevent-offering # This is the ID from 'compositefooinstances.syn.tools' above
+    service.syn.tools/name: storageevent
+    service.syn.tools/plan: standard
+    service.syn.tools/updatable: "false"
+    service.syn.tools/bindable: "false"
+  annotations:
+    service.syn.tools/description: Gcloud storage event handler instance
+    service.syn.tools/metadata: |
+      {
+        "displayName": "standard"
+      }
+spec:
+  compositeTypeRef:
+    apiVersion: syn.tools/v1
+    kind: CompositeStorageEventInstance
+  writeConnectionSecretsToNamespace: crossplane-services # Namespace to collect all connection secrets
+  mode: Pipeline
+  pipeline:
+  - step: create-event-handler
+    functionRef:
+      name: crossplane-contrib-function-go-templating
+    input:
+      apiVersion: gotemplating.fn.crossplane.io/v1beta1
+      kind: GoTemplate
+      source: Inline
+      inline:
+        template: |
+          apiVersion: cloudrun.gcp.upbound.io/v1beta2
+          kind: V2Service
+          metadata:
+            annotations:
+              {{ setResourceNameAnnotation "event-handler" }}
+            name: eh-{{ .observed.composite.resource.metadata.name }}
+          spec:
+            providerConfigRef:
+              name: gcp-family-providerconfig
+            forProvider:
+              ingress: INGRESS_TRAFFIC_ALL
+              location: europe-west1
+              template:
+                serviceAccount: gcloud-functions@cf-on-k8s-wg.iam.gserviceaccount.com
+                containers:
+                - image: {{ .observed.composite.resource.spec.parameters.eventHandlerImage }}
+                  env:
+                  - name: PARAMETERS
+                    value: "{{ .observed.composite.resource.spec.parameters.parameters }}"
+          ---
+          apiVersion: eventarc.gcp.upbound.io/v1beta2
+          kind: Trigger
+          metadata:
+            annotations:
+              {{ setResourceNameAnnotation "event-trigger" }}
+            name: eh-{{ .observed.composite.resource.metadata.name }}
+          spec:
+            providerConfigRef:
+              name: gcp-family-providerconfig
+            forProvider:
+              serviceAccount: gcloud-functions@cf-on-k8s-wg.iam.gserviceaccount.com
+              destination:
+                cloudRunService:
+                  region: europe-west1
+                  service: eh-{{ .observed.composite.resource.metadata.name }}
+              location: europe-west1
+              matchingCriteria:
+                - attribute: type
+                  value: google.cloud.storage.object.v1.finalized
+                - attribute: bucket
+                  value: {{ .observed.composite.resource.spec.parameters.bucketName }}
+  - step: automatically-detect-readiness
+    functionRef:
+      name: crossplane-contrib-function-auto-ready
+  - step: sequence-creation
+    functionRef:
+      name: crossplane-contrib-function-sequencer
+    input:
+      apiVersion: sequencer.fn.crossplane.io/v1beta1
+      kind: Input
+      rules:
+        - sequence:
+          - event-handler
+          - event-trigger
