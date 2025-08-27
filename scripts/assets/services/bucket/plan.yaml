@@ -34,7 +34,7 @@ spec:
           metadata:
             annotations:
               {{ setResourceNameAnnotation "bucket" }}
-            name: bucket-{{ .observed.composite.resource.spec.parameters.bucketName }}
+            name: {{ .observed.composite.resource.spec.parameters.bucketName }}
           spec:
             providerConfigRef:
               name: gcp-family-providerconfig
@@ -55,7 +55,7 @@ spec:
           metadata:
             annotations:
               {{ setResourceNameAnnotation "bucket-api-service" }}
-            name: bucket-{{ .observed.composite.resource.spec.parameters.bucketName }}-api
+            name: {{ .observed.composite.resource.spec.parameters.bucketName }}-api
           spec:
             providerConfigRef:
               name: gcp-family-providerconfig
@@ -68,14 +68,14 @@ spec:
                 - image: korifi/bucket-api:92187db4-db10-4edd-9d2d-cb8f40081cd9
                   env:
                   - name: BUCKET_NAME
-                    value: bucket-{{ .observed.composite.resource.spec.parameters.bucketName }}
+                    value: {{ .observed.composite.resource.spec.parameters.bucketName }}
           ---
           apiVersion: cloudrun.gcp.upbound.io/v1beta2
           kind: ServiceIAMMember
           metadata:
             annotations:
               {{ setResourceNameAnnotation "bucket-api-service-iam-member" }}
-            name: bucket-{{ .observed.composite.resource.spec.parameters.bucketName }}-api
+            name: {{ .observed.composite.resource.spec.parameters.bucketName }}-api-iam-member
           spec:
             providerConfigRef:
               name: gcp-family-providerconfig
@@ -83,7 +83,7 @@ spec:
               location: europe-west1
               member: allUsers
               role: roles/run.invoker
-              service: bucket-{{ .observed.composite.resource.spec.parameters.bucketName }}-api
+              service: {{ .observed.composite.resource.spec.parameters.bucketName }}-api
   - step: create-connection-details
     functionRef:
       name: crossplane-contrib-function-go-templating
