@@ -65,7 +65,10 @@ spec:
               template:
                 serviceAccount: gcloud-functions@cf-on-k8s-wg.iam.gserviceaccount.com
                 containers:
-                  - image: korifi/bucket-api:e40aff0c-8dbd-4a8c-b73c-885ae8941d82
+                - image: korifi/bucket-api:92187db4-db10-4edd-9d2d-cb8f40081cd9
+                  env:
+                  - name: BUCKET_NAME
+                    value: bucket-{{ .observed.composite.resource.spec.parameters.bucketName }}
           ---
           apiVersion: cloudrun.gcp.upbound.io/v1beta2
           kind: ServiceIAMMember
@@ -100,8 +103,8 @@ spec:
           data: {}
           {{ else }}
           data:
+            bucketUrl: {{ (printf "https://storage.googleapis.com/%v/" ( index $.observed.resources "bucket" ).resource.status.atProvider.id) | b64enc }}
             apiEndpoint: {{ (or ( index $.observed.resources "bucket-api-service" ).resource.status.atProvider.uri "") | b64enc }}
-            bucketUrl: {{ (or ( index $.observed.resources "bucket" ).resource.status.atProvider.selfLink "") | b64enc }}
           {{ end }}
   - step: automatically-detect-readiness
     functionRef:
