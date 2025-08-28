@@ -4,6 +4,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 SCRIPT_DIR="${ROOT_DIR}/scripts"
+DEPLOY_DIR="${ROOT_DIR}/deploy"
 
 retry() {
   until $@; do
@@ -78,7 +79,7 @@ function deploy_crossplane_service_broker() {
     --wait
 
   echo "Deploy crossplane functions"
-  kubectl apply -f "$SCRIPT_DIR/assets/crossplane-functions"
+  kubectl apply -f "$DEPLOY_DIR/crossplane-functions"
 
   echo "Creating crossplane secrets"
   kubectl -n crossplane-system delete secret gcp-family-providerconfig --ignore-not-found
@@ -86,12 +87,12 @@ function deploy_crossplane_service_broker() {
     kubectl -n crossplane-system create secret generic gcp-family-providerconfig --from-file=sa.json=/dev/stdin
 
   echo "Deploy crossplane providers"
-  kubectl apply -f "$SCRIPT_DIR/assets/crossplane-providers"
-  retry kubectl apply -f "$SCRIPT_DIR/assets/crossplane-providerconfigs"
+  kubectl apply -f "$DEPLOY_DIR/crossplane-providers"
+  retry kubectl apply -f "$DEPLOY_DIR/crossplane-providerconfigs"
 
   echo "Building Crossplane Service Broker..."
   export CROSSPLANE_BROKER_IMAGE="korifi/crossplane-service-broker:$(uuidgen)"
-  export OSB_SERVICE_IDS="psql-offering,bucket-offering,storageevent-offering"
+  export OSB_SERVICE_IDS="psql-offering,storage-offering,storageevent-offering"
   pushd "$ROOT_DIR/crossplane-service-broker"
   {
     make build
@@ -107,7 +108,7 @@ kind: Namespace
 metadata:
   name: crossplane-service-broker
 EOF
-  cat "$SCRIPT_DIR"/assets/crossplane-broker/* | envsubst | kubectl --namespace crossplane-service-broker apply -f -
+  cat "$DEPLOY_DIR"/crossplane-broker/* | envsubst | kubectl --namespace crossplane-service-broker apply -f -
 
   kubectl delete secret -n crossplane-service-broker crossplane-service-broker --ignore-not-found
   kubectl create secret -n crossplane-service-broker generic crossplane-service-broker \
@@ -116,8 +117,8 @@ EOF
 }
 
 function create_services() {
-  echo "Creating PostgreSQL service offering..."
-  kubectl apply -f "$SCRIPT_DIR/assets/services/*"
+  echo "Creating service offerings..."
+  kubectl apply -f "$DEPLOY_DIR/services/*"
 }
 
 function update_cluster_dns() {

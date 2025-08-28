@@ -1,16 +1,16 @@
 apiVersion: apiextensions.crossplane.io/v1
 kind: CompositeResourceDefinition
 metadata:
-  name: compositebucketinstances.syn.tools
+  name: compositestorageinstances.syn.tools
   labels:
-    service.syn.tools/id: bucket-offering # uuidgen | tr '[:upper:]' '[:lower:]'
-    service.syn.tools/name: bucket
+    service.syn.tools/id: storage-offering # uuidgen | tr '[:upper:]' '[:lower:]'
+    service.syn.tools/name: storage
     service.syn.tools/updatable: 'false'
   annotations:
-    service.syn.tools/description: Gcloud Storage Bucket
+    service.syn.tools/description: Gcloud Bucket Storage
     service.syn.tools/metadata: |
       {
-        "displayName": "Gcloud Storage Bucket"
+        "displayName": "Gcloud Bucket Storage"
       }
     service.syn.tools/tags: |
       ["storage", "bucket", "gcloud"]
@@ -20,8 +20,8 @@ spec:
     - bucketUrl
   group: syn.tools
   names:
-    kind: CompositeBucketInstance
-    plural: compositebucketinstances
+    kind: CompositeStorageInstance
+    plural: compositestorageinstances
   versions:
     - name: v1
       schema:

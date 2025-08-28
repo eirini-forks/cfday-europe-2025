@@ -1,17 +1,17 @@
 apiVersion: apiextensions.crossplane.io/v1
 kind: Composition
 metadata:
-  name: psql-plan-small
+  name: psql-plan-standard
   labels:
     service.syn.tools/id: psql-offering # This is the ID from 'compositefooinstances.syn.tools' above
     service.syn.tools/name: psql
-    service.syn.tools/plan: small
+    service.syn.tools/plan: standard
     service.syn.tools/updatable: "false"
   annotations:
-    service.syn.tools/description: PSQL instance small size
+    service.syn.tools/description: PSQL instance standard size
     service.syn.tools/metadata: |
       {
-        "displayName": "Small",
+        "displayName": "Standard",
         "memory": "1Gi",
       }
 spec:

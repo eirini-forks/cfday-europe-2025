@@ -1,14 +1,14 @@
 apiVersion: apiextensions.crossplane.io/v1
 kind: Composition
 metadata:
-  name: bucket-plan-standard
+  name: storage-plan-standard
   labels:
-    service.syn.tools/id: bucket-offering # This is the ID from 'compositefooinstances.syn.tools' above
-    service.syn.tools/name: bucket
+    service.syn.tools/id: storage-offering # This is the ID from 'compositefooinstances.syn.tools' above
+    service.syn.tools/name: storage
     service.syn.tools/plan: standard
     service.syn.tools/updatable: "false"
   annotations:
-    service.syn.tools/description: Bucket instance
+    service.syn.tools/description: Storage instance
     service.syn.tools/metadata: |
       {
         "displayName": "standard"
@@ -16,7 +16,7 @@ metadata:
 spec:
   compositeTypeRef:
     apiVersion: syn.tools/v1
-    kind: CompositeBucketInstance
+    kind: CompositeStorageInstance
   writeConnectionSecretsToNamespace: crossplane-services # Namespace to collect all connection secrets
   mode: Pipeline
   pipeline:
@@ -98,7 +98,7 @@ spec:
           kind: CompositeConnectionDetails
           metadata:
             annotations:
-              {{ setResourceNameAnnotation "bucket-composite-connection-details" }}
+              {{ setResourceNameAnnotation "storage-composite-connection-details" }}
           {{ if eq $.observed.resources nil }}
           data: {}
           {{ else }}
@@ -120,4 +120,4 @@ spec:
           - bucket
           - bucket-api-service
           - bucket-api-service-iam-member
-          - bucket-composite-connection-details
+          - storage-composite-connection-details
