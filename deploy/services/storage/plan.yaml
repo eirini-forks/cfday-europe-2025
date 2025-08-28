@@ -65,7 +65,7 @@ spec:
               template:
                 serviceAccount: gcloud-functions@cf-on-k8s-wg.iam.gserviceaccount.com
                 containers:
-                - image: korifi/bucket-api:92187db4-db10-4edd-9d2d-cb8f40081cd9
+                - image: korifi/bucket-api:0.0.1
                   env:
                   - name: BUCKET_NAME
                     value: {{ .observed.composite.resource.spec.parameters.bucketName }}

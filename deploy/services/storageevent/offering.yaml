@@ -38,10 +38,12 @@ spec:
                     bucketName:
                       type: string
                       description: "The name of the source bucket"
-                    parameters:
-                      type: string
-                      description: "The parameters to be passed to the event handler function in JSON format"
-                  required: ["eventHandlerImage", "bucketName", "parameters"]
+                    args:
+                      type: array
+                      items:
+                        type: string
+                      description: "The parameters to be passed to the event handler function"
+                  required: ["eventHandlerImage", "bucketName"]
 
       referenceable: true
       served: true

@@ -47,8 +47,10 @@ spec:
                 containers:
                 - image: {{ .observed.composite.resource.spec.parameters.eventHandlerImage }}
                   env:
-                  - name: PARAMETERS
-                    value: "{{ .observed.composite.resource.spec.parameters.parameters }}"
+                  {{ range $i, $item := .observed.composite.resource.spec.parameters.args }}
+                  - name: ARG{{ $i }}
+                    value: {{ $item }}
+                  {{ end }}
           ---
           apiVersion: eventarc.gcp.upbound.io/v1beta2
           kind: Trigger

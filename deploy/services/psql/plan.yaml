@@ -12,7 +12,7 @@ metadata:
     service.syn.tools/metadata: |
       {
         "displayName": "Standard",
-        "memory": "1Gi",
+        "memory": "1Gi"
       }
 spec:
   compositeTypeRef:
