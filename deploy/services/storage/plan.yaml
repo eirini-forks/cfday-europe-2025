@@ -34,7 +34,7 @@ spec:
           metadata:
             annotations:
               {{ setResourceNameAnnotation "bucket" }}
-            name: {{ .observed.composite.resource.spec.parameters.bucketName }}
+            name: bucket-{{ .observed.composite.resource.metadata.name }}
           spec:
             providerConfigRef:
               name: gcp-family-providerconfig
@@ -55,7 +55,7 @@ spec:
           metadata:
             annotations:
               {{ setResourceNameAnnotation "bucket-api-service" }}
-            name: {{ .observed.composite.resource.spec.parameters.bucketName }}-api
+            name: bucket-{{ .observed.composite.resource.metadata.name }}-api
           spec:
             providerConfigRef:
               name: gcp-family-providerconfig
@@ -68,14 +68,14 @@ spec:
                 - image: korifi/bucket-api:0.0.1
                   env:
                   - name: BUCKET_NAME
-                    value: {{ .observed.composite.resource.spec.parameters.bucketName }}
+                    value: bucket-{{ .observed.composite.resource.metadata.name }}
           ---
           apiVersion: cloudrun.gcp.upbound.io/v1beta2
           kind: ServiceIAMMember
           metadata:
             annotations:
               {{ setResourceNameAnnotation "bucket-api-service-iam-member" }}
-            name: {{ .observed.composite.resource.spec.parameters.bucketName }}-api-iam-member
+            name: bucket-{{ .observed.composite.resource.metadata.name }}-api-iam-member
           spec:
             providerConfigRef:
               name: gcp-family-providerconfig
@@ -83,7 +83,7 @@ spec:
               location: europe-west1
               member: allUsers
               role: roles/run.invoker
-              service: {{ .observed.composite.resource.spec.parameters.bucketName }}-api
+              service: bucket-{{ .observed.composite.resource.metadata.name }}-api
   - step: create-connection-details
     functionRef:
       name: crossplane-contrib-function-go-templating

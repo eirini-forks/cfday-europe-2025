@@ -30,22 +30,10 @@ spec:
           properties:
             spec:
               type: object
-              properties:
-                parameters:
-                  type: object
-                  description: "The service instance parameters"
-                  properties:
-                    bucketName:
-                      type: string
-                      description: "The name of the bucket. It must be globally unique."
-                  required: ["bucketName"]
 
       referenceable: true
       served: true
       additionalPrinterColumns:
         - jsonPath: .metadata.labels['service\.syn\.tools/plan']
           name: Plan
-          type: string
-        - jsonPath: .metadata.labels['service\.syn\.tools/cluster']
-          name: Cluster
           type: string

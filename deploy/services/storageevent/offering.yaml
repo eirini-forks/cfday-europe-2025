@@ -51,6 +51,3 @@ spec:
         - jsonPath: .metadata.labels['service\.syn\.tools/plan']
           name: Plan
           type: string
-        - jsonPath: .metadata.labels['service\.syn\.tools/cluster']
-          name: Cluster
-          type: string

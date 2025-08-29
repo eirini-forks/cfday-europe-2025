@@ -11,8 +11,7 @@ metadata:
     service.syn.tools/description: PSQL instance standard size
     service.syn.tools/metadata: |
       {
-        "displayName": "Standard",
-        "memory": "1Gi"
+        "displayName": "standard"
       }
 spec:
   compositeTypeRef:
@@ -40,8 +39,6 @@ spec:
               name: local-helm-provider
             forProvider:
               set:
-              - name: "primary.persistence.size"
-                value: {{ .observed.composite.resource.spec.parameters.size }}
               - name: "global.postgresql.fullnameOverride"
                 value: psql-{{ .observed.composite.resource.metadata.name }}
               - name: "primary.service.type"

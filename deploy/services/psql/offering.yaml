@@ -33,22 +33,9 @@ spec:
           properties:
             spec:
               type: object
-              properties:
-                parameters:
-                  type: object
-                  description: "The service instance parameters"
-                  properties:
-                    size:
-                      type: string
-                      description: "The size of the database volume"
-                  required: ["size"]
-
       referenceable: true
       served: true
       additionalPrinterColumns:
         - jsonPath: .metadata.labels['service\.syn\.tools/plan']
           name: Plan
-          type: string
-        - jsonPath: .metadata.labels['service\.syn\.tools/cluster']
-          name: Cluster
           type: string
