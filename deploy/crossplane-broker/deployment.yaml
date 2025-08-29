@@ -27,8 +27,6 @@ spec:
           env:
             - name: OSB_NAMESPACE
               value: crossplane-services
-            - name: OSB_SERVICE_IDS
-              value: $OSB_SERVICE_IDS
             - name: OSB_USERNAME
               value: test
             - name: OSB_PASSWORD

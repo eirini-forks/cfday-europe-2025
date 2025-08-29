@@ -92,7 +92,6 @@ function deploy_crossplane_service_broker() {
 
   echo "Building Crossplane Service Broker..."
   export CROSSPLANE_BROKER_IMAGE="korifi/crossplane-service-broker:$(uuidgen)"
-  export OSB_SERVICE_IDS="psql-offering,storage-offering,storageevent-offering"
   pushd "$ROOT_DIR/crossplane-service-broker"
   {
     make build
