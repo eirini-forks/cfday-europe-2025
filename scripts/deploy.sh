@@ -60,6 +60,8 @@ EOF
     --set=statefulsetRunner.resources.limits.memory=100Mi \
     --set=jobTaskRunner.resources.limits.cpu=50m \
     --set=jobTaskRunner.resources.limits.memory=100Mi \
+    --set=api.image="korifi/korifi-api-cfday2025:0.0.1" \
+    --set=controllers.image="korifi/korifi-controllers-cfday2025:0.0.1" \
     --wait
 
   kubectl wait --for=condition=ready clusterbuilder --all=true --timeout=15m
