@@ -5,6 +5,8 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 SCRIPT_DIR="${ROOT_DIR}/scripts"
 DEPLOY_DIR="${ROOT_DIR}/deploy"
+TMP_DIR="$(mktemp -d)"
+trap "rm -rf $TMP_DIR" EXIT
 
 retry() {
   until $@; do
@@ -38,7 +40,9 @@ EOF
     --create-namespace \
     --set=adminUserName="cf-admin" \
     --set=defaultAppDomainName="cfday.korifi.cf-app.com" \
-    --set=generateIngressCertificates="true" \
+    --set=generateIngressCertificates="false" \
+    --set=api.apiServer.ingressCertSecret="ingress-cert" \
+    --set=controllers.workloadsTLSSecret="ingress-cert" \
     --set=logLevel="debug" \
     --set=debug="false" \
     --set=stagingRequirements.buildCacheMB="1024" \
@@ -103,12 +107,6 @@ function deploy_crossplane_service_broker() {
   docker push $CROSSPLANE_BROKER_IMAGE
 
   echo "Deploying Crossplane Service Broker..."
-  kubectl apply -f - <<EOF
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: crossplane-service-broker
-EOF
   cat "$DEPLOY_DIR"/crossplane-broker/* | envsubst | kubectl --namespace crossplane-service-broker apply -f -
 
   kubectl delete secret -n crossplane-service-broker crossplane-service-broker --ignore-not-found
@@ -131,7 +129,38 @@ function update_cluster_dns() {
     --zone=korifi
 }
 
+create_namespaces() {
+  kubectl apply -f - <<EOF
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: korifi
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cf
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: crossplane-service-broker
+EOF
+}
+
+create_korifi_ingress_certificates() {
+  kubectl --namespace korifi delete secret ingress-cert --ignore-not-found
+
+  vault kv get -field=fullchain1 common/cfday2025/ingress-certificate >"$TMP_DIR/ingress-cert"
+  vault kv get -field=privkey1 common/cfday2025/ingress-certificate >"$TMP_DIR/ingress-key"
+
+  kubectl --namespace korifi create secret tls ingress-cert --cert="$TMP_DIR/ingress-cert" --key="$TMP_DIR/ingress-key"
+}
+
 main() {
+  create_namespaces
+
+  create_korifi_ingress_certificates
   install_korifi
 
   deploy_crossplane_service_broker
