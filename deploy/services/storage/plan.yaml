@@ -103,7 +103,9 @@ spec:
           data: {}
           {{ else }}
           data:
-            bucketUrl: {{ (printf "https://storage.googleapis.com/%v/" ( index $.observed.resources "bucket" ).resource.status.atProvider.id) | b64enc }}
+            {{- $bucketName := ( index $.observed.resources "bucket" ).resource.status.atProvider.id }}
+            bucketName: {{ ( printf "%s" $bucketName ) | b64enc }}
+            bucketUrl: {{ ( printf "https://storage.googleapis.com/%s/" $bucketName ) | b64enc }}
             apiEndpoint: {{ (or ( index $.observed.resources "bucket-api-service" ).resource.status.atProvider.uri "") | b64enc }}
           {{ end }}
   - step: automatically-detect-readiness

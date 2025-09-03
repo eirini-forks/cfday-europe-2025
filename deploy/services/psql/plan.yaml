@@ -94,10 +94,11 @@ spec:
           data: {}
           {{ else }}
           data:
-            endpoint: {{ ( index $.observed.resources "psql-release" ).connectionDetails.endpoint }}
-            port: {{ ( index $.observed.resources "psql-release" ).connectionDetails.port }}
-            user: {{ "postgres" | b64enc }}
-            password: {{ ( index $.observed.resources "psql-release" ).connectionDetails.password }}
+            {{- $details := ( index $.observed.resources "psql-release" ).connectionDetails }}
+            {{- $endpoint := $details.endpoint | b64dec }}
+            {{- $password := $details.password | b64dec }}
+            {{- $port := $details.port | b64dec }}
+            dbURL: {{ ( printf "postgres://postgres:%s@%s:%s?sslmode=disable" $password $endpoint $port) | b64enc }}
           {{ end }}
   - step: automatically-detect-readiness
     functionRef:

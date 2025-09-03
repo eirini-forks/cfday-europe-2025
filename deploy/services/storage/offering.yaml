@@ -16,8 +16,9 @@ metadata:
       ["storage", "bucket", "gcloud"]
 spec:
   connectionSecretKeys:
-    - apiEndpoint
+    - bucketName
     - bucketUrl
+    - apiEndpoint
   group: syn.tools
   names:
     kind: CompositeStorageInstance

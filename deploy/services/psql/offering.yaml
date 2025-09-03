@@ -17,10 +17,7 @@ metadata:
       ["database", "sql", "postgres"]
 spec:
   connectionSecretKeys:
-    - endpoint
-    - port
-    - user
-    - password
+    - dbURL
   group: syn.tools
   names:
     kind: CompositePSQLInstance
