@@ -3,7 +3,7 @@ kind: CompositeResourceDefinition
 metadata:
   name: compositestorageeventinstances.syn.tools
   labels:
-    service.syn.tools/id: storageevent-offering # uuidgen | tr '[:upper:]' '[:lower:]'
+    service.syn.tools/id: storageevent-offering
     service.syn.tools/name: storageevent
     service.syn.tools/updatable: 'false'
   annotations:
@@ -32,18 +32,18 @@ spec:
                   type: object
                   description: "The service instance parameters"
                   properties:
-                    eventHandlerImage:
-                      type: string
-                      description: "The image of the event handler function"
                     bucketName:
                       type: string
                       description: "The name of the source bucket"
+                    eventHandlerImage:
+                      type: string
+                      description: "The image of the event handler function"
                     args:
                       type: array
                       items:
                         type: string
                       description: "The parameters to be passed to the event handler function"
-                  required: ["eventHandlerImage", "bucketName"]
+                  required: ["bucketName","eventHandlerImage"]
 
       referenceable: true
       served: true

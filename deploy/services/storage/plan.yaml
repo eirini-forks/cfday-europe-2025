@@ -3,7 +3,7 @@ kind: Composition
 metadata:
   name: storage-plan-standard
   labels:
-    service.syn.tools/id: storage-offering # This is the ID from 'compositefooinstances.syn.tools' above
+    service.syn.tools/id: storage-offering # This is the ID from 'compositestorageinstances.syn.tools' above
     service.syn.tools/name: storage
     service.syn.tools/plan: standard
     service.syn.tools/updatable: "false"
@@ -17,7 +17,7 @@ spec:
   compositeTypeRef:
     apiVersion: syn.tools/v1
     kind: CompositeStorageInstance
-  writeConnectionSecretsToNamespace: crossplane-services # Namespace to collect all connection secrets
+  writeConnectionSecretsToNamespace: crossplane-services
   mode: Pipeline
   pipeline:
   - step: create-bucket

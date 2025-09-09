@@ -3,7 +3,7 @@ kind: CompositeResourceDefinition
 metadata:
   name: compositestorageinstances.syn.tools
   labels:
-    service.syn.tools/id: storage-offering # uuidgen | tr '[:upper:]' '[:lower:]'
+    service.syn.tools/id: storage-offering
     service.syn.tools/name: storage
     service.syn.tools/updatable: 'false'
   annotations:

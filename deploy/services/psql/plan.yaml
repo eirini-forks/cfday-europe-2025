@@ -3,7 +3,7 @@ kind: Composition
 metadata:
   name: psql-plan-standard
   labels:
-    service.syn.tools/id: psql-offering # This is the ID from 'compositefooinstances.syn.tools' above
+    service.syn.tools/id: psql-offering # This is the ID from 'compositepsqlinstances.syn.tools' above
     service.syn.tools/name: psql
     service.syn.tools/plan: standard
     service.syn.tools/updatable: "false"
@@ -17,7 +17,7 @@ spec:
   compositeTypeRef:
     apiVersion: syn.tools/v1
     kind: CompositePSQLInstance
-  writeConnectionSecretsToNamespace: crossplane-services # Namespace to collect all connection secrets
+  writeConnectionSecretsToNamespace: crossplane-services
   mode: Pipeline
   pipeline:
   - step: create-release

@@ -3,7 +3,7 @@ kind: Composition
 metadata:
   name: storageevent-plan-standard
   labels:
-    service.syn.tools/id: storageevent-offering # This is the ID from 'compositefooinstances.syn.tools' above
+    service.syn.tools/id: storageevent-offering # This is the ID from 'compositestorageeventinstances.syn.tools' above
     service.syn.tools/name: storageevent
     service.syn.tools/plan: standard
     service.syn.tools/updatable: "false"
@@ -18,7 +18,7 @@ spec:
   compositeTypeRef:
     apiVersion: syn.tools/v1
     kind: CompositeStorageEventInstance
-  writeConnectionSecretsToNamespace: crossplane-services # Namespace to collect all connection secrets
+  writeConnectionSecretsToNamespace: crossplane-services
   mode: Pipeline
   pipeline:
   - step: create-event-handler
@@ -30,28 +30,6 @@ spec:
       source: Inline
       inline:
         template: |
-          apiVersion: cloudrun.gcp.upbound.io/v1beta2
-          kind: V2Service
-          metadata:
-            annotations:
-              {{ setResourceNameAnnotation "event-handler" }}
-            name: eh-{{ .observed.composite.resource.metadata.name }}
-          spec:
-            providerConfigRef:
-              name: gcp-family-providerconfig
-            forProvider:
-              ingress: INGRESS_TRAFFIC_ALL
-              location: europe-west1
-              template:
-                serviceAccount: gcloud-functions@cf-on-k8s-wg.iam.gserviceaccount.com
-                containers:
-                - image: {{ .observed.composite.resource.spec.parameters.eventHandlerImage }}
-                  env:
-                  {{ range $i, $item := .observed.composite.resource.spec.parameters.args }}
-                  - name: ARG{{ $i }}
-                    value: {{ $item }}
-                  {{ end }}
-          ---
           apiVersion: eventarc.gcp.upbound.io/v1beta2
           kind: Trigger
           metadata:
@@ -73,6 +51,28 @@ spec:
                   value: google.cloud.storage.object.v1.finalized
                 - attribute: bucket
                   value: {{ .observed.composite.resource.spec.parameters.bucketName }}
+          ---
+          apiVersion: cloudrun.gcp.upbound.io/v1beta2
+          kind: V2Service
+          metadata:
+            annotations:
+              {{ setResourceNameAnnotation "event-handler" }}
+            name: eh-{{ .observed.composite.resource.metadata.name }}
+          spec:
+            providerConfigRef:
+              name: gcp-family-providerconfig
+            forProvider:
+              ingress: INGRESS_TRAFFIC_ALL
+              location: europe-west1
+              template:
+                serviceAccount: gcloud-functions@cf-on-k8s-wg.iam.gserviceaccount.com
+                containers:
+                - image: {{ .observed.composite.resource.spec.parameters.eventHandlerImage }}
+                  env:
+                  {{ range $i, $item := .observed.composite.resource.spec.parameters.args }}
+                  - name: ARG{{ $i }}
+                    value: {{ $item }}
+                  {{ end }}
   - step: automatically-detect-readiness
     functionRef:
       name: crossplane-contrib-function-auto-ready
