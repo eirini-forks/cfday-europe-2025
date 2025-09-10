@@ -115,11 +115,6 @@ function deploy_crossplane_service_broker() {
   kubectl -n crossplane-service-broker wait --for=condition=available deployment crossplane-service-broker --timeout=15m
 }
 
-function create_services() {
-  echo "Creating service offerings..."
-  kubectl apply -f "$DEPLOY_DIR/services/*"
-}
-
 function update_cluster_dns() {
   kubectl get service envoy-korifi -n korifi-gateway -ojsonpath='{.status.loadBalancer.ingress[0]}'
   gcloud dns record-sets update "*.cfday.korifi.cf-app.com." \
@@ -164,7 +159,6 @@ main() {
   install_korifi
 
   deploy_crossplane_service_broker
-  create_services
   update_cluster_dns
 }
 
