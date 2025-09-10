@@ -1,0 +1,41 @@
+cf marketplace
+
+kubectl apply -f "./deploy/services/**"
+./scripts/touch-broker.sh
+echo "psql storage storageevent" | xargs -n 1 cf enable-service-access
+cf marketplace
+
+cf create-service storage standard mystorage --wait
+cf create-service-key mystorage mystorage
+cf service-key mystorage mystorage
+
+cf create-service psql standard mypsql --wait
+cf create-service-key mypsql mypsql
+cf service-key mypsql mypsql
+
+cf create-service storageevent standard mystorageevent --wait -c "$(
+  cat <<EOF
+{
+  "bucketName": "$(cf service-key mystorage mystorage | tail -n +2 | jq -r .credentials.bucketName)",
+  "eventHandlerImage": "korifi/csv2db:0.0.1",
+  "args": [
+    "$(cf service-key mypsql mypsql | tail -n +2 | jq -r .credentials.dbURL)"
+  ]
+}
+EOF
+)"
+
+cf bind-service file-browser mystorage --wait && cf restart file-browser
+cf bind-service pgweb mypsql --wait && cf restart pgweb
+
+
+
+
+
+
+
+
+
+
+
+
