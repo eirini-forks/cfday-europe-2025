@@ -44,10 +44,5 @@ spec:
                         type: string
                       description: "The parameters to be passed to the event handler function"
                   required: ["bucketName","eventHandlerImage"]
-
       referenceable: true
       served: true
-      additionalPrinterColumns:
-        - jsonPath: .metadata.labels['service\.syn\.tools/plan']
-          name: Plan
-          type: string
