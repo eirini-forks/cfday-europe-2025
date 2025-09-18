@@ -38,15 +38,15 @@ spec:
             providerConfigRef:
               name: local-helm-provider
             forProvider:
+              chart:
+                name: postgresql
+                repository: oci://registry-1.docker.io/bitnamicharts
+                version: 16.7.15
               set:
               - name: "global.postgresql.fullnameOverride"
                 value: psql-{{ .observed.composite.resource.metadata.name }}
               - name: "primary.service.type"
                 value: "LoadBalancer"
-              chart:
-                name: postgresql
-                repository: oci://registry-1.docker.io/bitnamicharts
-                version: 16.7.15
               namespace: crossplane-services
               skipCreateNamespace: true
             connectionDetails:
