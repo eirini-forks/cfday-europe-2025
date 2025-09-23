@@ -47,6 +47,14 @@ spec:
                 value: psql-{{ .observed.composite.resource.metadata.name }}
               - name: "primary.service.type"
                 value: "LoadBalancer"
+              - name: image.repository
+                value: bitnamilegacy/postgresql
+              - name: volumePermissions.image.repository
+                value: bitnamilegacy/os-shell
+              - name: metrics.image.repository
+                value: bitnamilegacy/postgres-exporter
+              - name: global.security.allowInsecureImages
+                value: "true"
               namespace: crossplane-services
               skipCreateNamespace: true
             connectionDetails:
