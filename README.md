@@ -21,12 +21,12 @@ Here is a high level picture of how Korifi is able to consume various cloud serv
 ### Repository Structure
 
 This repository combines a couple of other git repositories bundled as submodules, as well as some local assets
-- crossplane-service-broker: This a fork of the [crossplane-service-broker](https://github.com/vshn/crossplane-service-broker). The main change in the fork is support for generic declarative services, so that providers don't have to modify the code of the broker itself.
-- deploy/services: These are the definitions of the sample services used in the proposed scenario.
-- csv2db: This is a simple serverless functions that converts csv to database tables.
-- cloud-storage-file-browser: This is a fork of the [cloud-storage-file-browser](https://github.com/bashbaugh/cloud-storage-file-browser) app. The main change is introducing support for the VCAP_SERVICES env var.
-- pgweb: This is a fork of the [pgweb](https://github.com/sosedoff/pgweb) app, where we have introduced support for the VCAP_SERVICES env var.
-- scripts: Useful scripts for cluster setup, installation as well as "touching" the service broker so that we can add services dynamically without restarting Korifi or the Crossplane Broker.
+- `crossplane-service-broker/`: This a fork of the [crossplane-service-broker](https://github.com/vshn/crossplane-service-broker). The main change in the fork is support for generic declarative services, so that providers don't have to modify the code of the broker itself.
+- `deploy/services/`: These are the definitions of the sample services used in the proposed scenario.
+- `csv2db/`: This is a simple serverless functions that converts csv to database tables.
+- `cloud-storage-file-browser/`: This is a fork of the [cloud-storage-file-browser](https://github.com/bashbaugh/cloud-storage-file-browser) app. The main change is introducing support for the VCAP_SERVICES env var.
+- `pgweb/`: This is a fork of the [pgweb](https://github.com/sosedoff/pgweb) app, where we have introduced support for the VCAP_SERVICES env var.
+- `scripts/`: Useful scripts for cluster setup, installation as well as "touching" the service broker so that we can add services dynamically without restarting Korifi or the Crossplane Broker.
 
 ### Installation
 
