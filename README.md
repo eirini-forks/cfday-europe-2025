@@ -7,6 +7,17 @@ This repository aims to demonstrate how Korifi with managed service support can 
 
 This repository is meant to complement [Plug, Push, and Play: Building Hybrid Apps With Korifi and Cloud Native](https://cfdayeu2025.sched.com/event/27Dnn/plug-push-and-play-building-hybrid-apps-with-korifi-and-cloud-native-georgi-sabev-danail-branekov-sap-se): a session presented as CF Day Europe 2025. If you are interested you may watch the session recording before you get your hands dirty.
 
+### Architecture
+
+Here is a high level picture of how Korifi is able to consume various cloud services wit the help of OSBAPI and crossplane
+
+![Architecture Diagram](images/architecture.png)
+
+- Korifi is able to register service brokers via OSBAPI
+- The crossplane service broker is an OSBAPI compliant broker that knows how to create crossplane resources
+- Crossplane along with its providers knows how to manage cloud services based on Kubernetes resources
+- Services themselves are defined purely declaratively as yaml files. They can be added dynamically without having to change Korifi or the Crossplane Service Broker
+
 ### Repository Structure
 
 This repository combines a couple of other git repositories bundled as submodules, as well as some local assets
