@@ -1,4 +1,4 @@
-# cfday-europe-2025
+# Korifi Crossplane Services
 
 This repository aims to demonstrate how Korifi with managed service support can leverage the power of crossplane and bring all sorts of cloud native services to the Cloud Foundry ecosystem. This integration benefits both App Developers and CF Providers as follows:
 - App Developers can push apps that run on Kubernetes and use a wide range of Cloud Native services that are currently not accessible to the cloud foundry ecosystem, while sticking to the well known and proven cf cli interface.
